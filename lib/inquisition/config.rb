@@ -9,6 +9,7 @@ module Inquisition
 
     def initialize(options={})
       @logger = (options[:logger]) ? options[:logger] : Logging.logger(STDOUT)
+      @logger.level = :info
 
       @opts = Trollop::options do
         opt :config, "Config file.", :default => "/etc/inquisition/config.yaml"
@@ -27,12 +28,18 @@ module Inquisition
           check_name = check.keys.first
           config = check[check_name]
           config[1..-1].each do |check|
-            command = "#{subsystem_name}_#{check}".to_sym
-            @logger.info("Checking #{subsystem_name}/#{check_name}/#{command}")
-            yield command, config[0]
+            check = check.split
+            command = "#{subsystem_name}/#{check.first.to_sym}"
+            limits = check[1..-1]
+            @logger.debug("Checking #{check_name}/#{command}")
+            yield command, config[0], limits
           end
         end
       end
+    end
+
+    def reload!
+      parse_config
     end
 
     private

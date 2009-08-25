@@ -3,8 +3,8 @@ module Inquisition
 
     def checks
       {
-        :disk_size => lambda { |target| file_system(target['device'])[:kb_size] },
-        :disk_percent_used => lambda {|target| file_system(target['device'])[:percent_used] }
+        'disk/size' => lambda { |target| file_system(target['device'])[:kb_size] },
+        'disk/percent_used' => lambda {|target| file_system(target['device'])[:percent_used] }
       }
     end
   end
