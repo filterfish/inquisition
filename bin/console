@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'logging'
+require 'mq'
+require 'pp'
+
+logger = Logging.logger(STDOUT)
+
+EM.epoll
+AMQP.start(:host => 'localhost') do
+
+  mq = MQ.new
+  queue = mq.queue('data').bind(mq.topic('data'), :key => '*')
+
+  queue.subscribe do |h, message|
+    logger.info("%s: %s" % [h.routing_key, Marshal.restore(message).inspect])
+  end
+end
