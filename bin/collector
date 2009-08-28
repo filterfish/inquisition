@@ -6,6 +6,7 @@ require 'socket'
 require 'mq'
 require 'pp'
 
+require File.dirname(__FILE__) + '/../lib/inquisition'
 require 'lib/inquisition/config'
 require 'lib/inquisition/checks'
 
