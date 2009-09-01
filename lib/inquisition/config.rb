@@ -22,20 +22,12 @@ module Inquisition
       @config['checks']
     end
 
-    def run_checks
-      checks.each do |subsystem_name, subsystem_config|
-        subsystem_config.each do |check|
-          check_name = check.keys.first
-          config = check[check_name]
-          config[1..-1].each do |check|
-            check = check.split
-            command = "#{subsystem_name}/#{check.first.to_sym}"
-            limits = check[1..-1]
-            @logger.debug("Checking #{check_name}/#{command}")
-            yield command, config[0], limits
-          end
-        end
-      end
+    def subsystems
+      checks.keys
+    end
+
+    def alerts
+      @config['alerts']
     end
 
     def reload!

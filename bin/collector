@@ -1,14 +1,12 @@
 #!/usr/bin/env ruby
 
+require File.dirname(__FILE__) + '/../lib/inquisition'
+
 require 'rubygems'
 require 'logging'
 require 'socket'
 require 'mq'
 require 'pp'
-
-require File.dirname(__FILE__) + '/../lib/inquisition'
-require 'lib/inquisition/config'
-require 'lib/inquisition/checks'
 
 include Inquisition
 
@@ -16,23 +14,19 @@ logger = Logging.logger(STDOUT)
 
 config = Configuration.new
 
+checks = Checks.new(config, :logger => logger)
+logger.debug("Load external checks")
+checks.load_checks('external_checks')
+
+logger.debug("Installing signal handler")
 signal_handler = lambda { logger.info("Reloading config"); config.reload! }
 trap :HUP, signal_handler
 
-checks = Checks.new
-checks.load_checks('external_checks')
-
-external_checks = ExternalChecks.new
-
-logger.info("Load external checks")
-
-require 'mq'
-
 AMQP.start(:host => 'localhost') do
   mq = MQ.new
-  EM.add_periodic_timer(10) {
-    config.run_checks do |command, target, limits|
-      result = external_checks.checks[command].call(target)
+  EM.add_periodic_timer(1) {
+
+    checks.run_checks do |result,command,target,limits|
       mq.topic('data').publish(Marshal.dump([command, target, result, limits]), :key => Socket.gethostname)
     end
   }

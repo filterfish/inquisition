@@ -1,19 +1,33 @@
 #!/usr/bin/env ruby
 
+require File.dirname(__FILE__) + '/../lib/inquisition'
+
 require 'rubygems'
 require 'logging'
 require 'mq'
 require 'pp'
 
+include Inquisition
+
 logger = Logging.logger(STDOUT)
+logger.level = :debug
+
+config = Configuration.new
+
+logger.info("Connecting to the XMPP server")
+xmpp = Alerts::XMPP.new(config.alerts['xmpp'])
+logger.info("Connected to the XMPP server")
 
 EM.epoll
 AMQP.start(:host => 'localhost') do
 
   mq = MQ.new
-  queue = mq.queue('data').bind(mq.topic('data'), :key => '*')
+  data_queue = mq.queue('data').bind(mq.topic('data'), :key => '*')
 
-  queue.subscribe do |h, message|
-    logger.info("%s: %s" % [h.routing_key, Marshal.restore(message).inspect])
+  data_queue.subscribe do |h, message|
+    m = Marshal.restore(message)
+    logger.info("%s: %s" % [h.routing_key, m.inspect])
+    limit = Limits.new(lambda { xmpp.send("Problem: #{m.inspect}") })
+    limit.check(m[2], m[3])
   end
 end
