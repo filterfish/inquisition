@@ -10,7 +10,10 @@ require 'pp'
 
 include Inquisition
 
+include Ohai::Mixin::Command
+
 logger = Logging.logger(STDOUT)
+logger.level = :debug
 
 config = Configuration.new
 

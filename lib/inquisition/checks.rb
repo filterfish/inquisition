@@ -5,6 +5,8 @@ module Inquisition
 
   class Checks
 
+    PAGE_SIZE = 4096
+
     def initialize(config, options={})
       @logger = (options[:logger]) ? options[:logger] : Logging.logger(STDOUT)
 
@@ -65,7 +67,7 @@ module Inquisition
         end
       end.flatten
 
-      plugins.detect { |p| subsystem_regex.match(p) }
+      plugins.select { |p| subsystem_regex.match(p) }
     end
   end
 end
