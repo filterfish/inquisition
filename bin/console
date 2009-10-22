@@ -26,6 +26,11 @@ if opts[:xmpp]
   logger.info("Connected to the XMPP server")
 end
 
+terminate = lambda { puts "\nexiting"; exit }
+["SIGTERM", "SIGINT", "SIGKILL"].each do |sig|
+    trap sig, terminate
+end
+
 EM.epoll
 AMQP.start(:host => 'localhost') do
 
