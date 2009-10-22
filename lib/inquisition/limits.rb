@@ -6,16 +6,26 @@ module Inquisition
 
     def check(value, limits)
 
-      return if limits.empty?
+      case
+      # Alert is boolean
+      when value.is_a?(TrueClass) || value.is_a?(FalseClass)
+        if limits[0].to_s == value
+          @todo.call
+        end
+        return
+      when limits.empty?
+        return
 
-      value = value.to_f
-      upper = limits[0].to_f
-      lower = limits[1].to_f
+      else
+        value = value.to_f
+        upper = limits[0].to_f
+        lower = limits[1].to_f
 
-      if value > upper
-        @todo.call
-      elsif lower && value < lower
-        @todo.call
+        if value > upper
+          @todo.call
+        elsif lower && value < lower
+          @todo.call
+        end
       end
     end
   end
