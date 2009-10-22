@@ -9,14 +9,22 @@ require 'pp'
 
 include Inquisition
 
+opts = Trollop::options do
+  opt :xmpp, "Don't send xmpp messages", :default => false
+end
+
+pp opts
+
 logger = Logging.logger(STDOUT)
 logger.level = :debug
 
 config = Configuration.new
 
-logger.info("Connecting to the XMPP server")
-xmpp = Alerts::XMPP.new(config.alerts['xmpp'])
-logger.info("Connected to the XMPP server")
+if opts[:xmpp]
+  logger.info("Connecting to the XMPP server")
+  xmpp = Alerts::XMPP.new(config.alerts['xmpp'])
+  logger.info("Connected to the XMPP server")
+end
 
 EM.epoll
 AMQP.start(:host => 'localhost') do
@@ -27,7 +35,8 @@ AMQP.start(:host => 'localhost') do
   data_queue.subscribe do |h, message|
     m = Marshal.restore(message)
     logger.info("%s: %s" % [h.routing_key, m.inspect])
-    limit = Limits.new(lambda { xmpp.send("Problem: #{m.inspect}") })
+    todo = (opts[:xmpp]) ? lambda { xmpp.send("Problem: #{m.inspect}") } : lambda { logger.warn("Problem: #{m.inspect}") }
+    limit = Limits.new(todo)
     limit.check(m[2], m[3])
   end
 end
