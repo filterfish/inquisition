@@ -15,9 +15,13 @@ module Inquisition
       @ohai.require_plugin('os')
     end
 
-    def file_system(ohai, dev)
+    def file_system(dev)
       path = (File.symlink?(dev)) ? Pathname.new(dev).realpath.to_s : dev
-      ohai[:filesystem][path]
+      @ohai[:filesystem][path]
+    end
+
+    def memory(which)
+      @ohai[which]
     end
 
     def load_checks(file)
@@ -36,7 +40,7 @@ module Inquisition
             command = "#{subsystem_name}/#{check.first.to_sym}"
             limits = check[1..-1]
             @logger.debug("Checking #{check_name}/#{command}")
-            result = @checks[command].call(@ohai, config[0])
+            result = @checks[command].call(config[0])
             yield result, command, config[0], limits
           end
         end
