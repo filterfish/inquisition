@@ -15,8 +15,6 @@ module Inquisition
 
   class NumberLimit
     def initialize(value, limits)
-      @logger = Logging.logger(STDOUT)
-      @logger.level = :debug
       @value = value.to_f
 
       @upper = (limits[0]) ? Convertor.parse(limits[0]) : 0
@@ -25,10 +23,10 @@ module Inquisition
 
     def check
       if @value > @upper
-        @logger.debug("value [#{@value}] > limit [#{@upper}]")
+        Inquisition::Logging.debug("value [#{@value}] > limit [#{@upper}]")
         yield
       elsif @lower && @value < @lower
-        @logger.debug("value [#{@value}] < limit [#{@lower}]")
+        Inquisition::Logging.debug("value [#{@value}] < limit [#{@lower}]")
         yield
       end
     end

@@ -8,8 +8,6 @@ module Inquisition
   class Configuration
 
     def initialize(options={})
-      @logger = (options[:logger]) ? options[:logger] : Logging.logger(STDOUT)
-      @logger.level = :info
 
       @opts = Trollop::options do
         opt :config, "Config file.", :default => "/etc/inquisition/config.yaml"

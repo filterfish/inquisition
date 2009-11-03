@@ -2,41 +2,5 @@
 
 require File.dirname(__FILE__) + '/../lib/inquisition'
 
-require 'rubygems'
-require 'logging'
-require 'socket'
-require 'mq'
-require 'pp'
-
-include Inquisition
-
-include Ohai::Mixin::Command
-
-logger = Logging.logger(STDOUT)
-logger.level = :debug
-
-config = Configuration.new
-
-checks = Checks.new(config, :logger => logger)
-logger.debug("Load external checks")
-checks.load_checks('external_checks')
-
-logger.debug("Installing signal handler")
-
-reload = lambda { logger.info("Reloading config"); config.reload! }
-terminate = lambda { puts "\nexiting"; exit }
-
-trap :HUP, reload
-
-["SIGTERM", "SIGINT", "SIGKILL"].each do |sig|
-  trap sig, terminate
-end
-
-AMQP.start(:host => 'localhost') do
-  mq = MQ.new
-  EM.add_periodic_timer(1) {
-    checks.run_checks do |result,command,target,limits|
-      mq.topic('data').publish(Marshal.dump([command, target, result, limits]), :key => Socket.gethostname)
-    end
-  }
-end
+collector = Collector.new
+collector.run

@@ -2,46 +2,5 @@
 
 require File.dirname(__FILE__) + '/../lib/inquisition'
 
-require 'rubygems'
-require 'logging'
-require 'mq'
-require 'pp'
-
-include Inquisition
-
-opts = Trollop::options do
-  opt :xmpp, "Don't send xmpp messages", :default => false
-end
-
-pp opts
-
-logger = Logging.logger(STDOUT)
-logger.level = :debug
-
-config = Configuration.new
-
-if opts[:xmpp]
-  logger.info("Connecting to the XMPP server")
-  xmpp = Alerts::XMPP.new(config.alerts['xmpp'])
-  logger.info("Connected to the XMPP server")
-end
-
-terminate = lambda { puts "\nexiting"; exit }
-["SIGTERM", "SIGINT", "SIGKILL"].each do |sig|
-    trap sig, terminate
-end
-
-EM.epoll
-AMQP.start(:host => 'localhost') do
-
-  mq = MQ.new
-  data_queue = mq.queue('data').bind(mq.topic('data'), :key => '*')
-
-  data_queue.subscribe do |h, message|
-    m = Marshal.restore(message)
-    logger.info("%s: %s" % [h.routing_key, m.inspect])
-    todo = (opts[:xmpp]) ? lambda { xmpp.send("Problem: #{m.inspect}") } : lambda { logger.warn("Problem: #{m.inspect}") }
-    limit = Limits.new(todo)
-    limit.check(m[2], m[3])
-  end
-end
+console = Console.new
+console.run

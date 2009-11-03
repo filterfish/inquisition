@@ -1,15 +1,17 @@
 require 'ohai'
 require 'pathname'
+require 'open4'
 
 module Inquisition
 
+  include Open4
   class Checks
+
+    include Ohai::Mixin::Command
 
     PAGE_SIZE = 4096
 
-    def initialize(config, options={})
-      @logger = (options[:logger]) ? options[:logger] : Logging.logger(STDOUT)
-
+    def initialize(config)
       @config = config
       @ohai = Ohai::System.new
       @ohai.require_plugin('os')
@@ -39,7 +41,7 @@ module Inquisition
             check = check.split
             command = "#{subsystem_name}/#{check.first.to_sym}"
             limits = check[1..-1]
-            @logger.debug("Checking #{check_name}/#{command}")
+            Inquisition::Logging.debug("Checking #{check_name}/#{command}")
             result = @checks[command].call(config[0])
             yield result, command, config[0], limits
           end
