@@ -1,4 +1,5 @@
 require 'trollop'
+require 'extlib'
 require 'yaml'
 require 'erb'
 
@@ -17,7 +18,11 @@ module Inquisition
     end
 
     def checks
-      @config['checks']
+      @config[:checks]
+    end
+
+    def system
+      @config[:system]
     end
 
     def subsystems
@@ -25,7 +30,7 @@ module Inquisition
     end
 
     def alerts
-      @config['alerts']
+      @config[:alerts]
     end
 
     def reload!
@@ -35,7 +40,7 @@ module Inquisition
     private
 
     def parse_config
-      @config = YAML.load(ERB.new(IO.read(@opts[:config])).result)
+      @config = Mash.new(YAML.load(ERB.new(IO.read(@opts[:config])).result))
     end
   end
 end

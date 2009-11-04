@@ -3,11 +3,11 @@ module Inquisition
   class BooleanLimit
     def initialize(value, limits)
       @limit = limits[0].to_s
-      @value = value
+      @value = value.to_s
     end
 
     def check
-      if @limits == @value
+      if @limit == @value
         yield
       end
     end
@@ -39,7 +39,8 @@ module Inquisition
 
     def check(value, limits)
       case
-      # Alert is boolean
+      when value == -1
+        return -1
       when limits.empty?
         return
       when value.is_a?(TrueClass) || value.is_a?(FalseClass)

@@ -11,11 +11,15 @@ class Collector
   def initialize
     @config = Configuration.new
 
+    @period = @config.system[:frequency]
+
+    Inquisition::Logging.init(@config.system[:log_config], 'collector')
+
     @checks = Checks.new(@config)
-    Inquisition::Logging.debug("Load external checks")
+    Inquisition::Logging.info("Load external checks")
     @checks.load_checks('external_checks')
 
-    Inquisition::Logging.debug("Installing signal handler")
+    Inquisition::Logging.info("Installing signal handlers")
 
     # Reload the config when we get a SIGHUP
     trap :HUP, lambda { Inquisition::Logging.info("Reloading config"); @config.reload! }
@@ -28,7 +32,7 @@ class Collector
   def run
     AMQP.start(:host => 'localhost') do
       mq = MQ.new
-      EM.add_periodic_timer(1) {
+      EM.add_periodic_timer(@period) {
         @checks.run_checks do |result,command,target,limits|
           mq.topic('data').publish(Marshal.dump([command, target, result, limits]), :key => Socket.gethostname)
         end

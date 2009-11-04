@@ -12,9 +12,14 @@ module Inquisition
         init
       end
 
-      def init(*opts)
+      def init(log_config=nil, name=nil)
         if @logger.nil?
-          @logger = (opts.empty? ? ::Logging.logger(STDOUT) : ::Logging.logger(*opts))
+          @logger = if log_config
+                      ::Logging.configure(log_config)
+                      ::Logging::Logger[name]
+                    else
+                      ::Logging.logger(STDOUT)
+                    end
         end
         @logger
       end

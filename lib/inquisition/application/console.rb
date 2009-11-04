@@ -11,6 +11,8 @@ class Console
 
     @config = Configuration.new
 
+    Inquisition::Logging.init(@config.system[:log_config], 'console')
+
     if @opts[:xmpp]
       Inquisition::Logging.info("Connecting to the XMPP server")
       @xmpp = Alerts::XMPP.new(@config.alerts['xmpp'])
@@ -30,10 +32,13 @@ class Console
 
       data_queue.subscribe do |h, message|
         m = Marshal.restore(message)
-        Inquisition::Logging.info("%s: %s, %s, %s, %s" % [h.routing_key, m[0], m[1].inspect, m[2], m[3].inspect])
-        todo = (@opts[:xmpp]) ? lambda { xmpp.send("Problem: #{m.inspect}") } : lambda { Inquisition::Logging.warn("Problem: #{m.inspect}") }
+        Inquisition::Logging.value("%s: %s, %s, %s, %s" % [h.routing_key, m[0], m[1].inspect, m[2], m[3].inspect])
+        todo = lambda { @xmpp.send("Problem: #{m.inspect}") if @opts[:xmpp]; Inquisition::Logging.alert("#{m.inspect}") }
         limit = Limits.new(todo)
-        limit.check(m[2], m[3])
+        if limit.check(m[2], m[3]) == -1
+          todo.call
+          Inquisition::Logging.error("Check returned -1")
+        end
       end
     }
   end
