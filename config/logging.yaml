@@ -1,0 +1,49 @@
+logging_config:
+  pre_config:
+    define_levels:
+      - debug
+      - info
+      - value
+      - warn
+      - error
+      - fatal
+      - alert
+    format_as: inspect
+
+  loggers:
+    - name: collector
+      level: info
+      additive: false
+      trace: false
+      appenders:
+        - collector
+
+    - name: console
+      level: debug
+      additive: false
+      trace: false
+      appenders:
+        - console
+
+  appenders:
+    - type: RollingFile
+      size: 4194304
+      safe: true
+      keep: 10
+      name: collector
+      filename: '/var/log/inquisition/collector.log'
+      truncate: false
+      layout:
+        type: Pattern
+        pattern: '%d: [%5l] -- %m\n'
+
+    - type: RollingFile
+      size: 4194304
+      safe: true
+      keep: 10
+      name: console
+      filename: '/var/log/inquisition/console.log'
+      truncate: false
+      layout:
+        type: Pattern
+        pattern: '%d: [%5l] -- %m\n'
