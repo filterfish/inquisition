@@ -1,6 +1,7 @@
 $:.unshift File.expand_path(File.dirname(__FILE__))
 
 require 'rubygems'
+require 'daemons/daemonize'
 require 'mq'
 
 require 'inquisition/alerts'

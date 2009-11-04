@@ -1,5 +1,3 @@
-#!/usr/bin/env ruby
-
 require File.dirname(__FILE__) + '/../../inquisition'
 
 require 'socket'
@@ -9,6 +7,11 @@ class Collector
   include Inquisition
 
   def initialize
+
+    @opts = Trollop::options do
+      opt :daemon, "Daemonise", :default => false
+    end
+
     @config = Configuration.new
 
     @period = @config.system[:frequency]
@@ -27,6 +30,8 @@ class Collector
     ["SIGTERM", "SIGINT", "SIGKILL"].each do |sig|
       trap sig, lambda { puts "\nexiting"; exit }
     end
+
+    Daemonize.daemonize('/var/log/inquisition/console-daemon.log') if @opts[:daemon]
   end
 
   def run
