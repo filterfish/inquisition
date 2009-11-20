@@ -11,7 +11,8 @@ spec = Gem::Specification.new do |s|
   s.authors = ["Richard Heycock"]
   s.add_dependency('ohai', '>= 0.3.4')
   s.add_dependency('amqp', '>= 0.6.5')
-  s.add_dependency "extlib"
+  s.add_dependency("extlib")
+  s.add_dependency("open4")
 
   s.executables = Dir::glob("bin/*").map{|exe| File::basename exe}
 
