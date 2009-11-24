@@ -37,7 +37,7 @@ class Collector
   def run
     AMQP.start(:host => 'localhost') do
       mq = MQ.new
-      EM.add_periodic_timer(@period) {
+      EM.add_periodic_timer(@config.system[:frequency]) {
         @checks.run_checks do |result,command,target,limits|
           mq.topic('data').publish(Marshal.dump([command, target, result, limits]), :key => Socket.gethostname)
         end
