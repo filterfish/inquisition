@@ -3,6 +3,8 @@ $:.unshift File.expand_path(File.dirname(__FILE__))
 require 'rubygems'
 require 'daemons/daemonize'
 require 'mq'
+require 'uri'
+require 'net/http'
 
 require 'inquisition/alerts'
 require 'inquisition/checks'

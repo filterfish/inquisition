@@ -53,5 +53,18 @@ checks = {
     else
       -1
     end
+  },
+  'http/get' => lambda { |config_item|
+    uri = URI.parse(config_item[:uri])
+
+    begin
+      http = Net::HTTP.new(uri.host, uri.port)
+      request = Net::HTTP::Get.new((uri.query.nil?) ? uri.path : "#{uri.path}?#{uri.query}")
+      response = http.request(request)
+      (response.code.to_i == 200) ? true : false
+    rescue Errno::ECONNREFUSED,Errno::ECONNRESET => e
+      Inquisition::Logging.error("http/get #{uri}: #{e.message}")
+      false
+    end
   }
 }
