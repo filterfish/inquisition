@@ -8,11 +8,14 @@ class Console
     @opts = Trollop::options do
       opt :xmpp, "Don't send xmpp messages", :default => true
       opt :daemon, "Daemonise", :default => false
+      opt :pid, "Create PID file", :default => false
     end
 
     @config = Configuration.new
 
     Daemonize.daemonize('/var/log/inquisition/console-daemon.log') if @opts[:daemon]
+
+    Daemons::PidFile.new('/var/run/inquistion', File.basename($0)).pid = Process.pid if @opts[:pid]
 
     Inquisition::Logging.init(@config.system[:log_config], 'console')
 

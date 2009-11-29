@@ -10,6 +10,7 @@ class Collector
 
     @opts = Trollop::options do
       opt :daemon, "Daemonise", :default => false
+      opt :pid, "Create PID file", :default => false
     end
 
     @config = Configuration.new
@@ -32,6 +33,8 @@ class Collector
     end
 
     Daemonize.daemonize('/var/log/inquisition/console-daemon.log') if @opts[:daemon]
+
+    Daemons::PidFile.new('/var/run/inquistion', File.basename($0)).pid = Process.pid if @opts[:pid]
   end
 
   def run

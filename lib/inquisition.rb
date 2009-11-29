@@ -2,6 +2,7 @@ $:.unshift File.expand_path(File.dirname(__FILE__))
 
 require 'rubygems'
 require 'daemons/daemonize'
+require 'daemons/pidfile'
 require 'mq'
 require 'uri'
 require 'net/http'
