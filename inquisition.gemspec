@@ -1,6 +1,6 @@
 spec = Gem::Specification.new do |s|
   s.name = 'inquisition'
-  s.version = '0.2'
+  s.version = '0.3'
   s.date = '2009-11-03'
   s.summary = 'Extensible monitoring tool'
   s.email = "filterfish@roughage.com.au"
