@@ -5,6 +5,10 @@ class Console
   include Inquisition
 
   def initialize
+    ["TERM", "INT", "QUIT"].each do |sig|
+        trap sig, lambda { Inquisition::Logging.info("exiting"); exit }
+    end
+
     @opts = Trollop::options do
       opt :xmpp, "Don't send xmpp messages", :default => true
       opt :daemon, "Daemonise", :default => false
@@ -23,10 +27,6 @@ class Console
       Inquisition::Logging.debug("Connecting to the XMPP server")
       @xmpp = Alerts::XMPP.new(@config.alerts['xmpp'])
       Inquisition::Logging.info("Connected to the XMPP server")
-    end
-
-    ["SIGTERM", "SIGINT", "SIGKILL"].each do |sig|
-        trap sig, lambda { Inquisition::Logging.info("\nexiting"); exit }
     end
   end
 

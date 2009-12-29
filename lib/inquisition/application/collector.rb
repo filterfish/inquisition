@@ -8,22 +8,9 @@ class Collector
 
   def initialize
 
-    @opts = Trollop::options do
-      opt :daemon, "Daemonise", :default => false
-      opt :pid, "Create PID file", :default => false
+    ["TERM", "INT", "QUIT"].each do |sig|
+      trap sig, lambda { puts "exiting"; exit }
     end
-
-    @config = Configuration.new
-
-    @period = @config.system[:frequency]
-
-    Inquisition::Logging.init(@config.system[:log_config], 'collector')
-
-    @checks = Checks.new(@config)
-    Inquisition::Logging.info("Load external checks")
-    @checks.load_checks('external_checks')
-
-    Inquisition::Logging.info("Installing signal handlers")
 
     # Reload the config when we get a SIGHUP
     trap :HUP, lambda {
@@ -38,9 +25,20 @@ class Collector
       end
     }
 
-    ["SIGTERM", "SIGINT", "SIGKILL"].each do |sig|
-      trap sig, lambda { puts "\nexiting"; exit }
+    @opts = Trollop::options do
+      opt :daemon, "Daemonise", :default => false
+      opt :pid, "Create PID file", :default => false
     end
+
+    @config = Configuration.new
+
+    Inquisition::Logging.init(@config.system[:log_config], 'collector')
+
+    @checks = Checks.new(@config)
+    Inquisition::Logging.info("Load external checks")
+    @checks.load_checks('external_checks')
+
+    Inquisition::Logging.info("Installing signal handlers")
 
     Daemonize.daemonize('/var/log/inquisition/console-daemon.log') if @opts[:daemon]
 
