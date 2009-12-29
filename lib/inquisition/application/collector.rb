@@ -26,7 +26,17 @@ class Collector
     Inquisition::Logging.info("Installing signal handlers")
 
     # Reload the config when we get a SIGHUP
-    trap :HUP, lambda { Inquisition::Logging.info("Reloading config"); @config.reload! }
+    trap :HUP, lambda {
+      Inquisition::Logging.info("Reloading config"); @config.reload!
+      if @timer && EventMachine.reactor_running?
+        @timer.cancel
+        @timer = EventMachine::PeriodicTimer.new(@config.system[:frequency]) {
+          run_checks
+        }
+      else
+        Inquisition::Logging.error("Cannot reload config, reactor not running")
+      end
+    }
 
     ["SIGTERM", "SIGINT", "SIGKILL"].each do |sig|
       trap sig, lambda { puts "\nexiting"; exit }
@@ -39,12 +49,18 @@ class Collector
 
   def run
     AMQP.start(:host => 'localhost') do
-      mq = MQ.new
-      EM.add_periodic_timer(@config.system[:frequency]) {
-        @checks.run_checks do |result,command,target,limits|
-          mq.topic('data').publish(Marshal.dump([command, target, result, limits]), :key => Socket.gethostname)
-        end
+      @mq = MQ.new
+      @timer = EventMachine::PeriodicTimer.new(@config.system[:frequency]) {
+        run_checks
       }
+    end
+  end
+
+  private
+
+  def run_checks
+    @checks.run_checks do |result,command,target,limits|
+      @mq.topic('data').publish(Marshal.dump([command, target, result, limits]), :key => Socket.gethostname)
     end
   end
 end
