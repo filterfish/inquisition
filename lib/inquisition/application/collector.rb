@@ -40,7 +40,7 @@ class Collector
 
     Inquisition::Logging.info("Installing signal handlers")
 
-    Daemonize.daemonize('/var/log/inquisition/console-daemon.log') if @opts[:daemon]
+    Daemonize.daemonize('/var/log/inquisition/collector-daemon.log') if @opts[:daemon]
 
     Daemons::PidFile.new('/var/run/inquistion', File.basename($0)).pid = Process.pid if @opts[:pid]
   end
