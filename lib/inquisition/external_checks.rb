@@ -47,12 +47,7 @@ checks = {
       end
     end
 
-    if ret.exitstatus == 0
-      Convertor.parse(result[1])
-      (result) ? Convertor.parse(result[1]) : -1
-    else
-      -1
-    end
+    (ret.exitstatus == 0 && result) ? Convertor.parse(result[1]) : -1
   },
   'http/get' => lambda { |config_item|
     uri = URI.parse(config_item[:uri])
@@ -62,7 +57,7 @@ checks = {
       request = Net::HTTP::Get.new((uri.query.nil?) ? uri.path : "#{uri.path}?#{uri.query}")
       response = http.request(request)
       (response.code.to_i == 200) ? true : false
-    rescue Errno::ECONNREFUSED,Errno::ECONNRESET => e
+    rescue => e
       Inquisition::Logging.error("http/get #{uri}: #{e.message}")
       false
     end
