@@ -9,7 +9,7 @@ class Collector
   def initialize
 
     ["TERM", "INT", "QUIT"].each do |sig|
-      trap sig, lambda { puts "exiting"; exit }
+      trap sig, lambda { Inquisition::Logging.info("exiting"); exit }
     end
 
     # Reload the config when we get a SIGHUP
