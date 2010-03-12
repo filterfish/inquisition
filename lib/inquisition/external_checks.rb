@@ -23,7 +23,7 @@ checks = {
       pid = File.read(target[:pid_file]).strip
       if File.exists?(File.join('/proc', pid))
         status = File.read("/proc/#{pid}/stat").split
-        status[23].to_i * PAGE_SIZE
+        status[23].to_i * page_size
       else
         status = -1
       end

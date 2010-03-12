@@ -9,12 +9,15 @@ module Inquisition
 
     include Ohai::Mixin::Command
 
-    PAGE_SIZE = 4096
+    attr_reader :page_size
 
     def initialize(config)
       @config = config
       @ohai = Ohai::System.new
       @ohai.require_plugin('os')
+
+      @page_size = `getconf PAGESIZE`.to_i
+      raise "Cannot get system page size" if @page_size == 0
     end
 
     def file_system(dev)
