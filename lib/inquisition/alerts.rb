@@ -4,6 +4,7 @@ module Inquisition
       def initialize(config)
         @xmpp = XMPPSender.new(config[:sender_jid], config[:recipient_jid], config[:sender_passwd])
         @xmpp.connect
+        @xmpp.install_handlers
       end
 
       def send(message)

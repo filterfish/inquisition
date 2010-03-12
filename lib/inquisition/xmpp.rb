@@ -9,10 +9,10 @@ class XMPPSender
 
   def initialize(handle, recipient, password, options={})
     Jabber::debug = options[:debug] if options[:debug]
-    @logger = (options[:logger]) ? options[:logger] : Logging.logger(STDOUT)
     @password = password
     @client = client = Client::new(JID::new(handle))
     @recipient = recipient
+    @connection_state = :disconnected
   end
 
   def connect(retries=3, timeout=10)
@@ -30,6 +30,7 @@ class XMPPSender
 
     @client.auth(@password)
     @client.send(Presence.new.set_type(:available))
+    @connection_state = :connected
   end
 
   def send(message, opts={})
@@ -39,6 +40,33 @@ class XMPPSender
 
     message = Message::new(@recipient, message)
     message.type = :chat
+
     @client.send(message)
+  end
+
+  def install_handlers
+    # What to do when an exception occurs
+    @client.on_exception do |e, client, where|
+      if (e.is_a?(Jabber::ServerDisconnected) || e.is_a?(IOError)) && @connection_state == :connected
+        @connection_state = :disconnected
+        reconnect
+      else
+        Inquisition::Logging.error(e.message) if e && @connection_state != :disconnected
+      end
+    end
+  end
+
+  private
+
+  def reconnect
+    Inquisition::Logging.info("XMPP has gone away. Attempting to reconnect")
+    begin
+      connect
+      Inquisition::Logging.info("Cool. XMPP server is back.")
+    rescue Errno::ECONNREFUSED => e
+      Inquisition::Logging.info("XMPP server not back yet. Waiting ...")
+      sleep 2
+      retry
+    end
   end
 end
