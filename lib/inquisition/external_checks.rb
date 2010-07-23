@@ -57,7 +57,7 @@ checks = {
       request = Net::HTTP::Get.new((uri.query.nil?) ? uri.path : "#{uri.path}?#{uri.query}")
       response = http.request(request)
       (response.code.to_i == 200) ? true : false
-    rescue => e
+    rescue StandardError, SignalException  => e
       Inquisition::Logging.error("http/get #{uri}: #{e.message}")
       false
     end
