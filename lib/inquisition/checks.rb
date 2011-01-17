@@ -21,8 +21,7 @@ module Inquisition
     end
 
     def file_system(dev)
-      path = (File.symlink?(dev)) ? Pathname.new(dev).realpath.to_s : dev
-      @ohai[:filesystem][path]
+      @ohai[:filesystem][dev]
     end
 
     def memory(which)
