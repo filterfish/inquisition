@@ -1,0 +1,38 @@
+system:
+  frequency: 1
+  log_config: /etc/inquisition/logging.yaml
+
+checks:
+  filesystem:
+  - tmp:
+    - device: tmpfs
+    - percent_used
+  - usr:
+    - device: /dev/vg/usr
+    - percent_used
+  - var:
+    - device: /dev/vg/var
+    - percent_used 80%
+
+  memory:
+  - machine:
+    - device: n_a
+    - free 2G 128M
+
+  process:
+  - memory:
+    - pid_file: <pid file>
+    - rss 524288
+  - alive:
+    - pid_file: <pid file>
+    - exists false
+  amqp:
+  - queuing:
+    - queue_name: <queue name>
+    - depth 1000
+
+alerts:
+  xmpp:
+    recipient_jid: <recipient jabber address>
+    sender_jid: <send jabber address>
+    sender_passwd: <send passwd>
